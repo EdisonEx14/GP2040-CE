@@ -2229,6 +2229,10 @@ std::string setAddonOptions()
     docToValue(analogOptions.analog_error2, doc, "analog_error2");
     docToValue(analogOptions.enabled, doc, "AnalogInputEnabled");
 
+    StickModeSwitcherOptions& stickModeSwitcherOptions = Storage::getInstance().getAddonOptions().stickModeSwitcherOptions;
+    docToPin(stickModeSwitcherOptions.modeButtonPin, doc, "stickModeSwitcherPin");
+    docToValue(stickModeSwitcherOptions.enabled, doc, "StickModeSwitcherEnabled");
+
     BootselButtonOptions& bootselButtonOptions = Storage::getInstance().getAddonOptions().bootselButtonOptions;
     docToValue(bootselButtonOptions.buttonMap, doc, "bootselButtonMap");
     docToValue(bootselButtonOptions.enabled, doc, "BootselButtonAddonEnabled");
@@ -2743,6 +2747,10 @@ std::string getAddonOptions()
     writeDoc(doc, "analog_error", analogOptions.analog_error);
     writeDoc(doc, "analog_error2", analogOptions.analog_error2);
     writeDoc(doc, "AnalogInputEnabled", analogOptions.enabled);
+
+    const StickModeSwitcherOptions& stickModeSwitcherOptions = Storage::getInstance().getAddonOptions().stickModeSwitcherOptions;
+    writeDoc(doc, "stickModeSwitcherPin", cleanPin(stickModeSwitcherOptions.modeButtonPin));
+    writeDoc(doc, "StickModeSwitcherEnabled", stickModeSwitcherOptions.enabled);
 
     const BootselButtonOptions& bootselButtonOptions = Storage::getInstance().getAddonOptions().bootselButtonOptions;
     writeDoc(doc, "bootselButtonMap", bootselButtonOptions.buttonMap);
