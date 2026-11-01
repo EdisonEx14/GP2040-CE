@@ -14,10 +14,21 @@
  * A single potentiometer (analog) stick that can be switched between three
  * output functions with one GPIO button:
  *
- *   1. Left analog stick  (gamepad->state.lx / ly)
- *   2. Right analog stick (gamepad->state.rx / ry)
+ *   1. Left analog stick  (gamepad->state.lx / ly)   [XInput gamepad]
+ *   2. Right analog stick (gamepad->state.rx / ry)   [XInput gamepad]
  *   3. Keyboard WASD      (stick deflection drives dpad, which the built-in
  *                         KeyboardDriver turns into W/A/S/D key reports)
+ *
+ * Every press of the cycle button moves to the next mode. The required USB
+ * input mode follows the mode automatically: the two analog modes run on the
+ * XInput gamepad driver, WASD runs on the Keyboard driver. Switching between
+ * the two analog modes is instant; crossing the XInput<->Keyboard boundary
+ * saves gamepadOptions.inputMode and reboots (same save+reboot sequence the
+ * web configurator uses for input mode changes).
+ *
+ * The selected mode is persisted to flash on every button press
+ * (savedMode in StickModeSwitcherOptions), so the add-on resumes the exact
+ * mode -- and matching USB input mode -- after a power cycle.
  *
  * All potentiometer/calibration settings (pins, auto/manual calibration,
  * inner/outer deadzone, forced circularity, smoothing, error rate, invert)
@@ -29,9 +40,6 @@
  * key once (held until released) and returning to center releases it. When
  * switching away from WASD mode any currently held key is explicitly
  * released so no key ever gets stuck.
- *
- * The mode button (default GPIO 18, configurable in the web configurator)
- * cycles: Left Analog -> Right Analog -> WASD -> Left Analog -> ...
  */
 
 #ifndef STICK_MODE_SWITCHER_ENABLED
@@ -55,6 +63,9 @@
 #define STICK_MODE_SWITCHER_MODE_RIGHT_ANALOG 1
 #define STICK_MODE_SWITCHER_MODE_WASD         2
 #define STICK_MODE_SWITCHER_MODE_COUNT        3
+
+// Mode applied on a fresh install before the user has ever pressed the button
+#define STICK_MODE_SWITCHER_DEFAULT_MODE STICK_MODE_SWITCHER_MODE_LEFT_ANALOG
 
 // Minimum deflection (0..1, relative to center 0.5) required to register a
 // WASD direction. Guards against spurious diagonals from radial-deadzone
