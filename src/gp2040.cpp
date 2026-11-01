@@ -15,6 +15,7 @@
 
 // Inputs for Core0
 #include "addons/analog.h"
+#include "addons/stick_mode_switcher.h"
 #include "addons/bootsel_button.h"
 #include "addons/focus_mode.h"
 #include "addons/dualdirectional.h"
@@ -106,6 +107,7 @@ void GP2040::setup() {
 	addons.LoadUSBAddon(new KeyboardHostAddon());
 	addons.LoadUSBAddon(new GamepadUSBHostAddon());
 	addons.LoadAddon(new AnalogInput());
+	addons.LoadAddon(new StickModeSwitcherAddon());
 	HETriggerAddon* heTrigger = new HETriggerAddon();
 	if (addons.LoadAddon(heTrigger))
 		heTriggerAddon = heTrigger;
