@@ -569,6 +569,11 @@ message StickModeSwitcherOptions
 {
     optional bool enabled = 1;
     optional int32 modeButtonPin = 2;
+
+    // Persisted output mode: 0 = left analog, 1 = right analog, 2 = WASD.
+    // Written on every mode-button press so the add-on resumes the same mode
+    // (and the matching USB input mode) after a power cycle.
+    optional uint32 savedMode = 3;
 }
 
 message AnalogADS1219Options
