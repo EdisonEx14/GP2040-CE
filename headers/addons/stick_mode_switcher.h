@@ -67,6 +67,12 @@
 // Mode applied on a fresh install before the user has ever pressed the button
 #define STICK_MODE_SWITCHER_DEFAULT_MODE STICK_MODE_SWITCHER_MODE_LEFT_ANALOG
 
+// Default WASD keys (USB HID Usage IDs, decimal): W / S / A / D
+#define STICK_MODE_SWITCHER_DEFAULT_KEY_UP    0x1A // W
+#define STICK_MODE_SWITCHER_DEFAULT_KEY_DOWN   0x16 // S
+#define STICK_MODE_SWITCHER_DEFAULT_KEY_LEFT  0x04 // A
+#define STICK_MODE_SWITCHER_DEFAULT_KEY_RIGHT  0x07 // D
+
 // Minimum deflection (0..1, relative to center 0.5) required to register a
 // WASD direction. Guards against spurious diagonals from radial-deadzone
 // rescaling right at the deadzone edge.
