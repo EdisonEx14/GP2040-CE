@@ -6,6 +6,9 @@
 #include "helper.h"
 #include "storagemanager.h"
 #include "drivermanager.h"
+#include "eventmanager.h"
+#include "events/GPRestartEvent.h"
+#include "system.h"
 #include "pico/platform.h"
 #include "class/hid/hid.h"
 
@@ -129,8 +132,13 @@ void StickModeSwitcherAddon::setup() {
         }
     }
 
-    // Boot into Left Analog mode
-    currentMode = STICK_MODE_SWITCHER_MODE_LEFT_ANALOG;
+    // Restore the persisted output mode (power-cycle memory). On boot the
+    // firmware driver already matches the persisted input mode (XInput for the
+    // analog modes, Keyboard for WASD), because the transition saved it.
+    currentMode = options.savedMode;
+    if (currentMode >= STICK_MODE_SWITCHER_MODE_COUNT) {
+        currentMode = STICK_MODE_SWITCHER_DEFAULT_MODE;
+    }
 
     // WASD keyboard-mapping override tracking
     wasdMappingApplied = false;
@@ -144,9 +152,17 @@ void StickModeSwitcherAddon::setup() {
 /**
  * @brief Edge-detect the mode button (debounced) and cycle the output mode.
  *
- * When leaving WASD mode the dpad is explicitly cleared so that any key that
- * is currently held down (e.g. W) is released on the next KeyboardDriver
- * report, and the user's original keyboard mapping is restored.
+ * Each new mode also dictates the required USB input mode:
+ *   - left / right analog -> XInput gamepad
+ *   - WASD                -> Keyboard
+ * If the required input mode differs from the current one, the add-on writes
+ * it to gamepadOptions.inputMode, saves the whole config to flash (which also
+ * persists the selected mode across power cycles), and reboots -- exactly the
+ * same "save + reboot" sequence the web configurator uses for input mode
+ * changes. Transitions between the two analog modes need no reboot.
+ *
+ * When leaving WASD mode the dpad is explicitly cleared so any held key (e.g.
+ * W) is released and the user's original keyboard mapping is restored.
  */
 void StickModeSwitcherAddon::handleModeButton(Gamepad *gamepad) {
     if (!isValidPin(modeButtonPin)) return;
@@ -165,16 +181,39 @@ void StickModeSwitcherAddon::handleModeButton(Gamepad *gamepad) {
     if (debouncedPressed && !buttonWasPressed) {
         buttonWasPressed = true; // consumed this press
 
+        const uint8_t newMode = (currentMode + 1) % STICK_MODE_SWITCHER_MODE_COUNT;
+
+        // Leaving WASD: release any held key + restore the original mapping
         if (currentMode == STICK_MODE_SWITCHER_MODE_WASD) {
-            // Release any held WASD key immediately + restore the original mapping
             gamepad->state.dpad &= ~GAMEPAD_MASK_DPAD;
             applyWasdMapping(false);
         }
 
-        currentMode = (currentMode + 1) % STICK_MODE_SWITCHER_MODE_COUNT;
+        // Which USB input mode does the new mode require?
+        const InputMode requiredInputMode =
+            (newMode == STICK_MODE_SWITCHER_MODE_WASD) ? INPUT_MODE_KEYBOARD
+                                                       : INPUT_MODE_XINPUT;
 
+        currentMode = newMode;
         if (currentMode == STICK_MODE_SWITCHER_MODE_WASD) {
             applyWasdMapping(true);
+        }
+
+        // Persist the mode itself (power-cycle memory)
+        StickModeSwitcherOptions& myOptions =
+            Storage::getInstance().getAddonOptions().stickModeSwitcherOptions;
+        myOptions.savedMode = currentMode;
+
+        if (DriverManager::getInstance().getInputMode() != requiredInputMode) {
+            // USB descriptor swap: save the requested input mode + mode, then
+            // reboot so the new driver (Keyboard / XInput) gets initialized.
+            Storage::getInstance().getGamepadOptions().inputMode = requiredInputMode;
+            Storage::getInstance().save(true);
+            EventManager::getInstance().triggerEvent(
+                new GPRestartEvent(System::BootMode::DEFAULT));
+        } else {
+            // Same USB type (analog <-> analog): no reboot needed
+            Storage::getInstance().save(true);
         }
     } else if (!debouncedPressed) {
         buttonWasPressed = false;
