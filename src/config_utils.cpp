@@ -904,6 +904,7 @@ void ConfigUtils::initUnsetPropertiesWithDefaults(Config& config)
     // addonOptions.stickModeSwitcherOptions
     INIT_UNSET_PROPERTY(config.addonOptions.stickModeSwitcherOptions, enabled, !!STICK_MODE_SWITCHER_ENABLED);
     INIT_UNSET_PROPERTY(config.addonOptions.stickModeSwitcherOptions, modeButtonPin, STICK_MODE_SWITCHER_BUTTON_PIN);
+    INIT_UNSET_PROPERTY(config.addonOptions.stickModeSwitcherOptions, savedMode, STICK_MODE_SWITCHER_DEFAULT_MODE);
 
     // addonOptions.turboOptions
     INIT_UNSET_PROPERTY(config.addonOptions.turboOptions, enabled, !!TURBO_ENABLED);
