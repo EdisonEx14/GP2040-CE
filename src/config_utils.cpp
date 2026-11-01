@@ -12,6 +12,7 @@
 #include "GamepadConfig.h"
 #include "version.h"
 #include "addons/analog.h"
+#include "addons/stick_mode_switcher.h"
 #include "addons/board_led.h"
 #include "addons/bootsel_button.h"
 #include "addons/buzzerspeaker.h"
@@ -899,6 +900,10 @@ void ConfigUtils::initUnsetPropertiesWithDefaults(Config& config)
     INIT_UNSET_PROPERTY(config.addonOptions.analogOptions, joystick_max_x2, 4095);
     INIT_UNSET_PROPERTY(config.addonOptions.analogOptions, joystick_min_y2, 0);
     INIT_UNSET_PROPERTY(config.addonOptions.analogOptions, joystick_max_y2, 4095);
+
+    // addonOptions.stickModeSwitcherOptions
+    INIT_UNSET_PROPERTY(config.addonOptions.stickModeSwitcherOptions, enabled, !!STICK_MODE_SWITCHER_ENABLED);
+    INIT_UNSET_PROPERTY(config.addonOptions.stickModeSwitcherOptions, modeButtonPin, STICK_MODE_SWITCHER_BUTTON_PIN);
 
     // addonOptions.turboOptions
     INIT_UNSET_PROPERTY(config.addonOptions.turboOptions, enabled, !!TURBO_ENABLED);
@@ -1921,6 +1926,7 @@ void gpioMappingsMigrationCore(Config& config)
     markAddonPinIfUsed(config.addonOptions.analogOptions.analogAdc1PinY);
     markAddonPinIfUsed(config.addonOptions.analogOptions.analogAdc2PinX);
     markAddonPinIfUsed(config.addonOptions.analogOptions.analogAdc2PinY);
+    markAddonPinIfUsed(config.addonOptions.stickModeSwitcherOptions.modeButtonPin);
     markAddonPinIfUsed(config.addonOptions.buzzerOptions.pin);
     markAddonPinIfUsed(config.addonOptions.buzzerOptions.enablePin);
     markAddonPinIfUsed(config.addonOptions.turboOptions.ledPin);
