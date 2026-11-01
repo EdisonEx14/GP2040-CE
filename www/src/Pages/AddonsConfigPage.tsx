@@ -19,6 +19,10 @@ import { hexToInt } from '../Services/Utilities';
 
 import WebApi from '../Services/WebApi';
 import Analog, { analogScheme, analogState } from '../Addons/Analog';
+import StickModeSwitcher, {
+	stickModeSwitcherScheme,
+	stickModeSwitcherState,
+} from '../Addons/StickModeSwitcher';
 import Analog1256, {
 	analog1256Scheme,
 	analog1256State,
@@ -86,6 +90,7 @@ export type AddonPropTypes = {
 
 const schema = yup.object().shape({
 	...analogScheme,
+	...stickModeSwitcherScheme,
 	...analog1256Scheme,
 	...bootselScheme,
 	...onBoardLedScheme,
@@ -111,6 +116,7 @@ const schema = yup.object().shape({
 
 export const DEFAULT_VALUES = {
 	...analogState,
+	...stickModeSwitcherState,
 	...analog1256State,
 	...bootselState,
 	...onBoardLedState,
@@ -140,6 +146,7 @@ const ADDONS = [
 	Bootsel,
 	OnBoardLed,
 	Analog,
+	StickModeSwitcher,
 	Turbo,
 	Reverse,
 	I2CAnalog1115,
