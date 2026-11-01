@@ -574,6 +574,14 @@ message StickModeSwitcherOptions
     // Written on every mode-button press so the add-on resumes the same mode
     // (and the matching USB input mode) after a power cycle.
     optional uint32 savedMode = 3;
+
+    // Customizable WASD keys, stored as USB HID Usage IDs (decimal).
+    // Defaults: Up=W(0x1A), Down=S(0x16), Left=A(0x04), Right=D(0x07).
+    // 0 = None: that direction sends no key.
+    optional uint32 wasdKeyUp = 4;
+    optional uint32 wasdKeyDown = 5;
+    optional uint32 wasdKeyLeft = 6;
+    optional uint32 wasdKeyRight = 7;
 }
 
 message AnalogADS1219Options
