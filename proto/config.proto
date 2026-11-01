@@ -565,6 +565,12 @@ message AnalogADS1115Options
     optional uint32 ryChannel = 22;
 }
 
+message StickModeSwitcherOptions
+{
+    optional bool enabled = 1;
+    optional int32 modeButtonPin = 2;
+}
+
 message AnalogADS1219Options
 {
     optional bool enabled = 1;
@@ -1011,6 +1017,7 @@ message AddonOptions
     optional HETriggerOptions heTriggerOptions = 30;
     optional ProfileSliderOptions profileSliderOptions = 31;
     optional AnalogADS1115Options analogADS1115Options = 32;
+    optional StickModeSwitcherOptions stickModeSwitcherOptions = 33;
 }
 
 message MigrationHistory
