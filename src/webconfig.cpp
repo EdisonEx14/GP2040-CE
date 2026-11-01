@@ -2232,6 +2232,10 @@ std::string setAddonOptions()
     StickModeSwitcherOptions& stickModeSwitcherOptions = Storage::getInstance().getAddonOptions().stickModeSwitcherOptions;
     docToPin(stickModeSwitcherOptions.modeButtonPin, doc, "stickModeSwitcherPin");
     docToValue(stickModeSwitcherOptions.enabled, doc, "StickModeSwitcherEnabled");
+    docToValue(stickModeSwitcherOptions.wasdKeyUp, doc, "wasdKeyUp");
+    docToValue(stickModeSwitcherOptions.wasdKeyDown, doc, "wasdKeyDown");
+    docToValue(stickModeSwitcherOptions.wasdKeyLeft, doc, "wasdKeyLeft");
+    docToValue(stickModeSwitcherOptions.wasdKeyRight, doc, "wasdKeyRight");
 
     BootselButtonOptions& bootselButtonOptions = Storage::getInstance().getAddonOptions().bootselButtonOptions;
     docToValue(bootselButtonOptions.buttonMap, doc, "bootselButtonMap");
@@ -2751,6 +2755,10 @@ std::string getAddonOptions()
     const StickModeSwitcherOptions& stickModeSwitcherOptions = Storage::getInstance().getAddonOptions().stickModeSwitcherOptions;
     writeDoc(doc, "stickModeSwitcherPin", cleanPin(stickModeSwitcherOptions.modeButtonPin));
     writeDoc(doc, "StickModeSwitcherEnabled", stickModeSwitcherOptions.enabled);
+    writeDoc(doc, "wasdKeyUp", stickModeSwitcherOptions.wasdKeyUp);
+    writeDoc(doc, "wasdKeyDown", stickModeSwitcherOptions.wasdKeyDown);
+    writeDoc(doc, "wasdKeyLeft", stickModeSwitcherOptions.wasdKeyLeft);
+    writeDoc(doc, "wasdKeyRight", stickModeSwitcherOptions.wasdKeyRight);
 
     const BootselButtonOptions& bootselButtonOptions = Storage::getInstance().getAddonOptions().bootselButtonOptions;
     writeDoc(doc, "bootselButtonMap", bootselButtonOptions.buttonMap);
