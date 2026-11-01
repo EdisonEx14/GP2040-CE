@@ -10,7 +10,6 @@
 #include "events/GPRestartEvent.h"
 #include "system.h"
 #include "pico/platform.h"
-#include "class/hid/hid.h"
 
 #include <algorithm>
 #include <math.h>
@@ -225,8 +224,12 @@ void StickModeSwitcherAddon::handleModeButton(Gamepad *gamepad) {
  * WASD mode, and restore the user's original values when leaving it.
  *
  * The KeyboardDriver reads the active keyboard mapping every frame, so the
- * W/A/S/D output applies immediately and is guaranteed regardless of the
- * board's default mapping (usually arrow keys).
+ * WASD output applies immediately and is guaranteed regardless of the board's
+ * default mapping (usually arrow keys).
+ *
+ * The four direction keys come from the add-on options (wasdKeyUp/Down/
+ * Left/Right), configurable in the web configurator; they default to
+ * W/A/S/D. A value of 0 (None) makes that direction send no key.
  */
 void StickModeSwitcherAddon::applyWasdMapping(bool enable) {
     KeyboardMapping& mapping = Storage::getInstance().getActiveKeyboardMapping();
@@ -240,10 +243,13 @@ void StickModeSwitcherAddon::applyWasdMapping(bool enable) {
             originalKeyDpadLeft = mapping.keyDpadLeft;
             originalKeyDpadRight = mapping.keyDpadRight;
         }
-        mapping.keyDpadUp = HID_KEY_W;
-        mapping.keyDpadDown = HID_KEY_S;
-        mapping.keyDpadLeft = HID_KEY_A;
-        mapping.keyDpadRight = HID_KEY_D;
+        // Apply the user's custom key selection (defaults to W/A/S/D)
+        const StickModeSwitcherOptions& myOptions =
+            Storage::getInstance().getAddonOptions().stickModeSwitcherOptions;
+        mapping.keyDpadUp = myOptions.wasdKeyUp;
+        mapping.keyDpadDown = myOptions.wasdKeyDown;
+        mapping.keyDpadLeft = myOptions.wasdKeyLeft;
+        mapping.keyDpadRight = myOptions.wasdKeyRight;
         wasdMappingApplied = true;
     } else {
         // Only restore the object we actually took over (guards against a
@@ -265,10 +271,19 @@ void __not_in_flash_func(StickModeSwitcherAddon::process)() {
     handleModeButton(gamepad);
 
     // Keep the WASD mapping override in place if a profile switch changed the
-    // active keyboard mapping object while we are in WASD mode.
-    if (currentMode == STICK_MODE_SWITCHER_MODE_WASD &&
-        wasdMappingTarget != &Storage::getInstance().getActiveKeyboardMapping()) {
-        applyWasdMapping(true);
+    // active keyboard mapping object, or if the user changed the custom WASD
+    // keys in the web configurator while we are already in WASD mode.
+    if (currentMode == STICK_MODE_SWITCHER_MODE_WASD) {
+        KeyboardMapping& activeMapping = Storage::getInstance().getActiveKeyboardMapping();
+        const StickModeSwitcherOptions& myOptions =
+            Storage::getInstance().getAddonOptions().stickModeSwitcherOptions;
+        if (wasdMappingTarget != &activeMapping ||
+            activeMapping.keyDpadUp != myOptions.wasdKeyUp ||
+            activeMapping.keyDpadDown != myOptions.wasdKeyDown ||
+            activeMapping.keyDpadLeft != myOptions.wasdKeyLeft ||
+            activeMapping.keyDpadRight != myOptions.wasdKeyRight) {
+            applyWasdMapping(true);
+        }
     }
 
     uint32_t joystickMax = GAMEPAD_JOYSTICK_MAX;
