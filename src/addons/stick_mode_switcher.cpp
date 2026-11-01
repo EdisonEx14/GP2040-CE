@@ -350,7 +350,20 @@ void __not_in_flash_func(StickModeSwitcherAddon::process)() {
         stick.y_value = ANALOG_CENTER;
     }
 
-    // Route the stick output according to the active mode
+    // Route the stick output according to the active mode.
+    //
+    // The WASD direction state lives in gamepad->state.dpad, which the active
+    // gamepad drivers (XInput/HID/PS4/...) report as ordinary directional
+    // buttons. A mode switch that crosses XInput<->Keyboard only becomes a
+    // different USB driver after a reboot, so for a short window the add-on
+    // may be in WASD mode while a gamepad driver is still active. In that
+    // window we must NOT write the dpad, otherwise the host sees spurious
+    // gamepad directional buttons (and, because the device reboots before a
+    // release report is sent, they appear stuck). Only emit WASD dpad while the
+    // actual driver is the Keyboard driver; otherwise keep the dpad released.
+    const InputMode activeInputMode = DriverManager::getInstance().getInputMode();
+    const bool keyboardDriverActive = (activeInputMode == INPUT_MODE_KEYBOARD);
+
     switch (currentMode) {
         case STICK_MODE_SWITCHER_MODE_LEFT_ANALOG:
             writeAnalogOutput(gamepad, joystickMax, true);
@@ -359,7 +372,11 @@ void __not_in_flash_func(StickModeSwitcherAddon::process)() {
             writeAnalogOutput(gamepad, joystickMax, false);
             break;
         case STICK_MODE_SWITCHER_MODE_WASD:
-            writeWasdOutput(gamepad);
+            if (keyboardDriverActive) {
+                writeWasdOutput(gamepad);
+            } else {
+                gamepad->state.dpad &= ~GAMEPAD_MASK_DPAD;
+            }
             break;
         default:
             break;
@@ -392,6 +409,9 @@ void StickModeSwitcherAddon::writeAnalogOutput(Gamepad *gamepad, uint32_t joysti
  * presses the key (it stays held in the HID report), and returning to center
  * removes it. The KeyboardDriver sends a fresh report whenever the key set
  * changes, so the host sees exactly one press/release pair per deflection.
+ *
+ * Only called when the active USB driver is the Keyboard driver; under a
+ * gamepad driver the caller suppresses dpad output entirely (see process()).
  */
 void StickModeSwitcherAddon::writeWasdOutput(Gamepad *gamepad) {
     uint8_t stickDpad = 0;
